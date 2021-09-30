@@ -1,4 +1,10 @@
-# REST API With Flask & SQL Alchemy
+# Proyecto de facultad de ingeniería Udelar, Webir
+El objetivo del proyecto es crear una aplicación similar a camelcamelcamel pero para mercado libre
+
+
+
+
+# OldReadMe: REST API With Flask & SQL Alchemy
 
 > Products API using Python Flask, SQL Alchemy and Marshmallow
 
