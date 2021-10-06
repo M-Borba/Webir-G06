@@ -34,8 +34,8 @@ class ProductSchema(ma.Schema):
     fields = ('id', 'name', 'description', 'price', 'qty')
 
 # Init schema
-product_schema = ProductSchema(strict=True)
-products_schema = ProductSchema(many=True, strict=True)
+product_schema = ProductSchema()
+products_schema = ProductSchema(many=True)
 
 # Create a Product
 @app.route('/product', methods=['POST'])
