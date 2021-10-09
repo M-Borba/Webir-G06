@@ -14,24 +14,26 @@ db = SQLAlchemy(app)
 # Init ma
 ma = Marshmallow(app)
 
+# Person Class/Model
+class Person(db.Model):
+  email = db.Column(db.String(25), primary_key=True)
+
+  def __init__(self, email):
+    self.email = email
+
 # Product Class/Model
 class Product(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  name = db.Column(db.String(100), unique=True)
-  description = db.Column(db.String(200))
-  price = db.Column(db.Float)
-  qty = db.Column(db.Integer)
+  sku = db.Column(db.String(50), primary_key=True)
+  json_data = db.Column(db.JSON)
 
-  def __init__(self, name, description, price, qty):
-    self.name = name
-    self.description = description
-    self.price = price
-    self.qty = qty
+  def __init__(self, sku, json_data):
+    self.sku = sku
+    self.json_data = json_data
 
 # Product Schema
 class ProductSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'name', 'description', 'price', 'qty')
+    fields = ('sku', 'json_data')
 
 # Init schema
 product_schema = ProductSchema()
@@ -40,12 +42,11 @@ products_schema = ProductSchema(many=True)
 # Create a Product
 @app.route('/product', methods=['POST'])
 def add_product():
-  name = request.json['name']
-  description = request.json['description']
-  price = request.json['price']
-  qty = request.json['qty']
+  sku = request.json['sku']
+  json_data = request.json['json_data']
+  #email = request.json['email'] si es nuevo mail se crea la persona, sino simplemente se asocia con person-product
 
-  new_product = Product(name, description, price, qty)
+  new_product = Product(sku, json_data)
 
   db.session.add(new_product)
   db.session.commit()
@@ -57,42 +58,59 @@ def add_product():
 def get_products():
   all_products = Product.query.all()
   result = products_schema.dump(all_products)
-  return jsonify(result.data)
+  return jsonify(result)
 
 # Get Single Products
-@app.route('/product/<id>', methods=['GET'])
-def get_product(id):
-  product = Product.query.get(id)
+@app.route('/product/<sku>', methods=['GET'])
+def get_product(sku):
+  product = Product.query.get(sku)
   return product_schema.jsonify(product)
 
 # Update a Product
-@app.route('/product/<id>', methods=['PUT'])
-def update_product(id):
-  product = Product.query.get(id)
+@app.route('/product/<sku>', methods=['PUT'])
+def update_product(sku):
+  product = Product.query.get(sku)
 
-  name = request.json['name']
-  description = request.json['description']
-  price = request.json['price']
-  qty = request.json['qty']
+  sku = request.json['sku']
+  json_data = request.json['json_data']
 
-  product.name = name
-  product.description = description
-  product.price = price
-  product.qty = qty
+  product.sku = sku
+  product.json_data = json_data
 
   db.session.commit()
 
   return product_schema.jsonify(product)
 
 # Delete Product
-@app.route('/product/<id>', methods=['DELETE'])
-def delete_product(id):
-  product = Product.query.get(id)
+@app.route('/product/<sku>', methods=['DELETE'])
+def delete_product(sku):
+  product = Product.query.get(sku)
   db.session.delete(product)
   db.session.commit()
 
   return product_schema.jsonify(product)
 
+
 # Run Server
 if __name__ == '__main__':
   app.run(debug=True)
+
+
+""""
+  class Association(Base):
+    tablename = 'association'
+    left_id = Column(ForeignKey('left.id'), primary_key=True)
+    right_id = Column(ForeignKey('right.id'), primary_key=True)
+    extra_data = Column(String(50))
+    child = relationship("Child")
+
+class Parent(Base):
+    tablename = 'left'
+    id = Column(Integer, primary_key=True)
+    children = relationship("Association")
+
+class Child(Base):
+    tablename = 'right'
+    id = Column(Integer, primary_key=True)
+    
+""""
