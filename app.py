@@ -17,6 +17,7 @@ ma = Marshmallow(app)
 # Person Class/Model
 class Person(db.Model):
   email = db.Column(db.String(25), primary_key=True)
+  products = db.relationship('Product', backref='owner')
 
   def __init__(self, email):
     self.email = email
@@ -25,10 +26,12 @@ class Person(db.Model):
 class Product(db.Model):
   sku = db.Column(db.String(50), primary_key=True)
   json_data = db.Column(db.JSON)
+  owner_id = db.Column(db.Integer, db.ForeignKey('person.email'))
 
-  def __init__(self, sku, json_data):
+  def __init__(self, sku, json_data, owner_id):
     self.sku = sku
     self.json_data = json_data
+    self.owner_id = owner_id
 
 # Product Schema
 class ProductSchema(ma.Schema):
@@ -38,6 +41,26 @@ class ProductSchema(ma.Schema):
 # Init schema
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
+
+# Create a Suscription
+@app.route('/suscription', methods=['POST'])
+def add_suscription():
+  email = request.json['email']
+  sku = request.json['sku']
+  json_data = request.json['json_data']
+  #email = request.json['email'] si es nuevo mail se crea la persona, sino simplemente se asocia con person-product
+
+  new_person = Person(email)
+
+  new_product = Product(sku, json_data, email)
+
+  db.session.add(new_person) 
+  db.session.commit()
+
+  db.session.add(new_product)
+  db.session.commit()
+
+  return product_schema.jsonify(new_product)
 
 # Create a Product
 @app.route('/product', methods=['POST'])
@@ -96,21 +119,21 @@ if __name__ == '__main__':
   app.run(debug=True)
 
 
-""""
-  class Association(Base):
-    tablename = 'association'
-    left_id = Column(ForeignKey('left.id'), primary_key=True)
-    right_id = Column(ForeignKey('right.id'), primary_key=True)
-    extra_data = Column(String(50))
-    child = relationship("Child")
+#""""
+#  class Association(Base):
+#    tablename = 'association'
+#    left_id = Column(ForeignKey('left.id'), primary_key=True)
+#    right_id = Column(ForeignKey('right.id'), primary_key=True)
+#    extra_data = Column(String(50))
+#    child = relationship("Child")
 
-class Parent(Base):
-    tablename = 'left'
-    id = Column(Integer, primary_key=True)
-    children = relationship("Association")
+#class Parent(Base):
+#    tablename = 'left'
+#    id = Column(Integer, primary_key=True)
+#    children = relationship("Association")
 
-class Child(Base):
-    tablename = 'right'
-    id = Column(Integer, primary_key=True)
+#class Child(Base):
+#    tablename = 'right'
+#    id = Column(Integer, primary_key=True)
     
-""""
+#""""
