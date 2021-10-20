@@ -5,13 +5,14 @@ from flask_marshmallow import Marshmallow
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from flask_migrate import Migrate
 import json
 
 Base = declarative_base()
 
 # Init app
-app = Flask(__name__)
-basedir = os.path.abspath(os.path.dirname(__file__))
+app = Flask(name)
+basedir = os.path.abspath(os.path.dirname(file))
 # Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
     os.path.join(basedir, 'db.sqlite')
@@ -161,5 +162,5 @@ def add_product():
 if __name__ == '__main__':
     app.run(debug=True)
 
-def getApp():
-    return app
+# def getApp():
+#     return app
