@@ -6,23 +6,38 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from flask_migrate import Migrate
+import psycopg2
 import json
 
 Base = declarative_base()
 
+
 # Init app
-app = Flask(name)
-basedir = os.path.abspath(os.path.dirname(file))
-# Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
-    os.path.join(basedir, 'db.sqlite')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app = Flask(__name__)
+
+
+ENV = 'dev'
+
+if ENV == 'dev':
+    app.debug = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://coco:root@localhost/camel"
+else:
+    app.debug = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://oiyrrypgcshihu:b11c89365f624d7c4fbeb9f8aa330d1a9594da91668a294858b10ce39716c320@ec2-52-207-47-210.compute-1.amazonaws.com:5432/d4als9lkenqs1b'
+
+app.config['SQLALCHEMY_DATABASE_MODIFICATIONS'] = False
+
+# basedir = os.path.abspath(os.path.dirname(__file__))
+# # Database
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
+#     os.path.join(basedir, 'db.sqlite')
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Init db
 db = SQLAlchemy(app)
 # Init ma
 ma = Marshmallow(app)
 
-# Person Class/Model
+# # Person Class/Model
 
 
 class Person(db.Model, Base):
@@ -160,7 +175,7 @@ def add_product():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
 
-# def getApp():
-#     return app
+def getApp():
+    return app
