@@ -16,11 +16,8 @@ Base = declarative_base()
 app = Flask(__name__)
 
 
-<<<<<<< HEAD:app.py
+
 ENV = 'prod'
-=======
-ENV = 'dev'
->>>>>>> 3a74e7431102b0312eaaae35fad042924ed76339:__init__.py
 
 if ENV == 'dev':
     app.debug = True
