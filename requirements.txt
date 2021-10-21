@@ -1,8 +1,7 @@
 SQLAlchemy==1.4.26
-wheel==0.34.2
 flask_marshmallow==0.14.0
-Flask==2.0.2
-pip==20.0.2
 Flask_SQLAlchemy==2.5.1
+pip==20.0.2
+wheel==0.34.2
+Flask==2.0.2
 alembic==1.7.4
-psycopg2==2.9.1
