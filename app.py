@@ -22,7 +22,7 @@ if ENV == 'dev':
     app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://coco:root@localhost/camel"
 else:
     app.debug = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://oiyrrypgcshihu:b11c89365f624d7c4fbeb9f8aa330d1a9594da91668a294858b10ce39716c320@ec2-52-207-47-210.compute-1.amazonaws.com:5432/d4als9lkenqs1b'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://oiyrrypgcshihu:b11c89365f624d7c4fbeb9f8aa330d1a9594da91668a294858b10ce39716c320@ec2-52-207-47-210.compute-1.amazonaws.com:5432/d4als9lkenqs1b'
 
 app.config['SQLALCHEMY_DATABASE_MODIFICATIONS'] = False
 
