@@ -11,6 +11,10 @@ flask-sqlalchemy = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 gunicorn = "*"
+psycopg2-binary = "*"
+psycopg2 = "*"
+pip = "*"
+alembic = "*"
 
 [requires]
 python_version = "3.8"
