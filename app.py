@@ -5,7 +5,6 @@ from flask_marshmallow import Marshmallow
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from flask_migrate import Migrate
 import psycopg2
 import json
 
