@@ -6,6 +6,8 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import json
+import requests
+import time
 
 Base = declarative_base()
 
@@ -17,7 +19,7 @@ app = Flask(__name__)
 
 ENV = 'prod'
 
-if ENV == 'dev':
+if ENV == 'prod':
     app.debug = True
     app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://coco:root@localhost/camel"
 else:
@@ -132,6 +134,21 @@ def add_product():
 
     return product_schema.jsonify(product)
 
+@app.route('/notificar')
+def report_elements():
+   products = Product.query.all()
+   for prod in products:
+        resp = requests.get("https://api.mercadolibre.com/items/"+prod.sku).json()
+        #print(resp['id'])
+        prods_pers = Person_product.query.filter_by(sku=resp['id'])
+        for pp in prods_pers:
+            if pp.drop_price>resp['price']:
+                return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
+            else:
+                return {'Dato':'Valor mayor'}
+
+
+
 # # Get All Products
 # @app.route('/product', methods=['GET'])
 # def get_products():
@@ -178,3 +195,32 @@ if __name__ == '__main__':
 
 def getApp():
     return app
+
+
+
+#------------------Mails
+
+def enviarCorreo(): # enviarCorreo(dirDestino,mensaje)
+  dirOrigen = 'webir2021@gmail.com'
+  dirDestino = 'webir2021@gmail.com'
+  contraseña = 'camelcamelcamel'
+  mensaje = '''camel camel camel camel camel'''
+
+  servidor_smtp = smtplib.SMTP("smtp.gmail.com",587)
+  servidor_smtp.ehlo()
+  servidor_smtp.starttls()
+  servidor_smtp.ehlo()
+  servidor_smtp.login(dirOrigen,contraseña)
+  servidor_smtp.sendmail(dirOrigen,dirDestino,mensaje)
+  servidor_smtp.quit()
+
+def prueba():
+  i = 1
+  while True:
+    time.sleep(5)
+    enviarCorreo()
+
+hilo = threading.Thread(target=prueba)
+hilo.daemon = True
+hilo.start() 
+import smtplib
