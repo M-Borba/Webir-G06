@@ -8,6 +8,8 @@ from sqlalchemy.ext.declarative import declarative_base
 import json
 import requests
 import time
+import smtplib
+from email.mime.text import MIMEText
 
 Base = declarative_base()
 
@@ -19,7 +21,7 @@ app = Flask(__name__)
 
 ENV = 'prod'
 
-if ENV == 'prod':
+if ENV == 'dev':
     app.debug = True
     app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://coco:root@localhost/camel"
 else:
@@ -42,7 +44,7 @@ ma = Marshmallow(app)
 
 
 class Person(db.Model, Base):
-    email = db.Column(db.String(25), primary_key=True)
+    email = db.Column(db.String(75), primary_key=True)
     children = relationship("Person_product")
 
     def __init__(self, email):
@@ -52,18 +54,18 @@ class Person(db.Model, Base):
 
 
 class Product(db.Model, Base):
-    sku = db.Column(db.String(50), primary_key=True)
-    json_data = db.Column(db.JSON)
+    sku = db.Column(db.String(100), primary_key=True)
+    price = db.Column(db.Integer)
 
-    def __init__(self, sku, json_data):
+    def __init__(self, sku, price):
         self.sku = sku
-        self.json_data = json_data
+        self.price = price
 
 
 class Person_product(db.Model, Base):
     email = Column(ForeignKey(
-        'person.email', ondelete="CASCADE"), primary_key=True)
-    sku = Column(ForeignKey('product.sku', ondelete="CASCADE"),
+        'person.email', ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
+    sku = Column(ForeignKey('product.sku', ondelete="CASCADE",onupdate="CASCADE"),
                  primary_key=True)
     drop_price = db.Column(db.Float)
     drop_discount = db.Column(db.Float)
@@ -80,7 +82,7 @@ class Person_product(db.Model, Base):
 
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ('sku', 'json_data')
+        fields = ('sku', 'price')
 
 
 # Init schema
@@ -93,17 +95,17 @@ products_schema = ProductSchema(many=True)
 @app.route('/product', methods=['POST'])
 def add_product():
     sku = request.json['sku']
-    json_data = request.json['json_data']
+    price = requests.get("https://api.mercadolibre.com/items/"+sku).json()['price']
     email = request.json['email']
     drop_price = request.json['drop_price']
     drop_discount = request.json['drop_discount']
 
     if not isinstance(sku, str):
         return "sku debe estar compuesto por caracteres"
-    try:
-        json.loads(json.dumps(json_data))
-    except ValueError as err:
-        return "json_data debe ser formato JSON"
+    # try:
+    #     json.loads(json.dumps(json_data))
+    # except ValueError as err:
+    #     return "json_data debe ser formato JSON"
     if not isinstance(email, str):
         return "email debe estar compuesto por caracteres"
     if not isinstance(drop_price, int):
@@ -113,7 +115,7 @@ def add_product():
 
     product = Product.query.get(sku)
     if product is None:
-        product = Product(sku, json_data)
+        product = Product(sku, price)
         db.session.add(product)
 
     person = Person.query.get(email)
@@ -134,18 +136,42 @@ def add_product():
 
     return product_schema.jsonify(product)
 
-@app.route('/notificar')
+#@app.route('/notificar')
 def report_elements():
-   products = Product.query.all()
-   for prod in products:
+    products = Product.query.all()
+    for prod in products:
         resp = requests.get("https://api.mercadolibre.com/items/"+prod.sku).json()
         #print(resp['id'])
         prods_pers = Person_product.query.filter_by(sku=resp['id'])
         for pp in prods_pers:
             if pp.drop_price>resp['price']:
-                return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
-            else:
-                return {'Dato':'Valor mayor'}
+                #return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
+                subject = "Camel-UY => "+ resp['title']
+                enviarCorreo(pp.email,resp['permalink'], subject)
+                print("Correo enviado a "+pp.email+" con subject "+subject)
+
+
+def enviarCorreo(dirDestino,mensaje,subject): # enviarCorreo(dirDestino,mensaje)
+    dirOrigen = 'webir2021@gmail.com'
+    contraseña = 'camelcamelcamel'
+
+    msg = MIMEText('''Bajo el precio!!!
+    Que estas esperando pajin? Anda a buscarlo!!
+    {}
+    '''.format(mensaje))
+    #print(pp.email)
+    #print(mensaje)
+    msg['Subject'] = subject
+    msg['From'] = 'webir2021@gmail.com'
+    msg['To'] = dirDestino
+
+    servidor_smtp = smtplib.SMTP("smtp.gmail.com",587)
+    servidor_smtp.ehlo()
+    servidor_smtp.starttls()
+    servidor_smtp.ehlo()
+    servidor_smtp.login(dirOrigen,contraseña)
+    servidor_smtp.sendmail(dirOrigen,dirDestino,msg.as_string())
+    servidor_smtp.quit()
 
 
 
@@ -200,27 +226,13 @@ def getApp():
 
 #------------------Mails
 
-def enviarCorreo(): # enviarCorreo(dirDestino,mensaje)
-  dirOrigen = 'webir2021@gmail.com'
-  dirDestino = 'webir2021@gmail.com'
-  contraseña = 'camelcamelcamel'
-  mensaje = '''camel camel camel camel camel'''
+# def prueba():
+#   i = 1
+#   while True:
+#     time.sleep(10)
+#     enviarCorreo()
 
-  servidor_smtp = smtplib.SMTP("smtp.gmail.com",587)
-  servidor_smtp.ehlo()
-  servidor_smtp.starttls()
-  servidor_smtp.ehlo()
-  servidor_smtp.login(dirOrigen,contraseña)
-  servidor_smtp.sendmail(dirOrigen,dirDestino,mensaje)
-  servidor_smtp.quit()
-
-def prueba():
-  i = 1
-  while True:
-    time.sleep(5)
-    enviarCorreo()
-
-hilo = threading.Thread(target=prueba)
-hilo.daemon = True
-hilo.start() 
-import smtplib
+# hilo = threading.Thread(target=prueba)
+# hilo.daemon = True
+# hilo.start() 
+# import smtplib

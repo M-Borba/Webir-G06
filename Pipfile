@@ -16,6 +16,7 @@ psycopg2 = "*"
 pip = "*"
 alembic = "*"
 requests = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.8"
