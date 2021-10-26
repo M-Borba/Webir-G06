@@ -172,7 +172,7 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
     contraseña = 'camelcamelcamel'
 
     msg = MIMEText('''Bajo el precio!!!
-    Que estas esperando pajin? Anda a buscarlo!!
+    Que estas esperando? Anda a buscarlo!!
     {}
     '''.format(mensaje))
     # print(pp.email)
