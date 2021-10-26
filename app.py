@@ -18,7 +18,6 @@ Base = declarative_base()
 app = Flask(__name__)
 
 
-
 ENV = 'prod'
 
 if ENV == 'dev':
@@ -56,6 +55,7 @@ class Person(db.Model, Base):
 class Product(db.Model, Base):
     sku = db.Column(db.String(100), primary_key=True)
     price = db.Column(db.Integer)
+    parent = relationship("Person_product")
 
     def __init__(self, sku, price):
         self.sku = sku
@@ -65,11 +65,10 @@ class Product(db.Model, Base):
 class Person_product(db.Model, Base):
     email = Column(ForeignKey(
         'person.email', ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
-    sku = Column(ForeignKey('product.sku', ondelete="CASCADE",onupdate="CASCADE"),
+    sku = Column(ForeignKey('product.sku', ondelete="CASCADE", onupdate="CASCADE"),
                  primary_key=True)
     drop_price = db.Column(db.Float)
     drop_discount = db.Column(db.Float)
-    child = relationship("Product")
 
     def __init__(self, sku, email, drop_price, drop_discount):
         self.sku = sku
@@ -95,7 +94,8 @@ products_schema = ProductSchema(many=True)
 @app.route('/product', methods=['POST'])
 def add_product():
     sku = request.json['sku']
-    price = requests.get("https://api.mercadolibre.com/items/"+sku).json()['price']
+    price = requests.get(
+        "https://api.mercadolibre.com/items/"+sku).json()['price']
     email = request.json['email']
     drop_price = request.json['drop_price']
     drop_discount = request.json['drop_discount']
@@ -136,22 +136,38 @@ def add_product():
 
     return product_schema.jsonify(product)
 
-#@app.route('/notificar')
+# @app.route('/notificar')
+
+
 def report_elements():
     products = Product.query.all()
     for prod in products:
-        resp = requests.get("https://api.mercadolibre.com/items/"+prod.sku).json()
-        #print(resp['id'])
+        resp = requests.get(
+            "https://api.mercadolibre.com/items/"+prod.sku).json()
+        # print(resp['id'])
         prods_pers = Person_product.query.filter_by(sku=resp['id'])
         for pp in prods_pers:
-            if pp.drop_price>resp['price']:
-                #return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
-                subject = "Camel-UY => "+ resp['title']
-                enviarCorreo(pp.email,resp['permalink'], subject)
-                print("Correo enviado a "+pp.email+" con subject "+subject)
+            if pp.drop_price > resp['price']:
+                # return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
+                subject = "Camel-UY => " + resp['title']
+                if(enviarCorreo(pp.email, resp['permalink'], subject)):
+                    print("Correo enviado a "+pp.email+" con subject "+subject)
+                    sku_aux = prod.sku
+                    email_aux = pp.email
+                    join_sku = db.session.query(Product).join(
+                        Person_product).filter(Product.sku == sku_aux).count() == 1
+                    join_email = db.session.query(Person).join(
+                        Person_product).filter(Person.email == email_aux).count() == 1
+                    db.session.delete(pp)
+                    if join_sku:
+                        db.session.delete(prod)
+                    if join_email:
+                        person = Person.query.get(email_aux)
+                        db.session.delete(person)
+                    db.session.commit()
 
 
-def enviarCorreo(dirDestino,mensaje,subject): # enviarCorreo(dirDestino,mensaje)
+def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensaje)
     dirOrigen = 'webir2021@gmail.com'
     contraseña = 'camelcamelcamel'
 
@@ -159,20 +175,22 @@ def enviarCorreo(dirDestino,mensaje,subject): # enviarCorreo(dirDestino,mensaje)
     Que estas esperando pajin? Anda a buscarlo!!
     {}
     '''.format(mensaje))
-    #print(pp.email)
-    #print(mensaje)
+    # print(pp.email)
+    # print(mensaje)
     msg['Subject'] = subject
     msg['From'] = 'webir2021@gmail.com'
     msg['To'] = dirDestino
-
-    servidor_smtp = smtplib.SMTP("smtp.gmail.com",587)
-    servidor_smtp.ehlo()
-    servidor_smtp.starttls()
-    servidor_smtp.ehlo()
-    servidor_smtp.login(dirOrigen,contraseña)
-    servidor_smtp.sendmail(dirOrigen,dirDestino,msg.as_string())
-    servidor_smtp.quit()
-
+    try:
+        servidor_smtp = smtplib.SMTP("smtp.gmail.com", 587)
+        servidor_smtp.ehlo()
+        servidor_smtp.starttls()
+        servidor_smtp.ehlo()
+        servidor_smtp.login(dirOrigen, contraseña)
+        servidor_smtp.sendmail(dirOrigen, dirDestino, msg.as_string())
+        servidor_smtp.quit()
+        return True
+    except:
+        return False
 
 
 # # Get All Products
@@ -212,19 +230,16 @@ def enviarCorreo(dirDestino,mensaje,subject): # enviarCorreo(dirDestino,mensaje)
 
 #   return product_schema.jsonify(product)
 
-
 # Run Server
-
-
 if __name__ == '__main__':
     app.run()
+
 
 def getApp():
     return app
 
 
-
-#------------------Mails
+# ------------------Mails
 
 # def prueba():
 #   i = 1
@@ -234,5 +249,5 @@ def getApp():
 
 # hilo = threading.Thread(target=prueba)
 # hilo.daemon = True
-# hilo.start() 
+# hilo.start()
 # import smtplib
