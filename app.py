@@ -18,7 +18,7 @@ Base = declarative_base()
 app = Flask(__name__)
 
 
-ENV = 'dev'
+ENV = 'prod'
 
 if ENV == 'dev':
     app.debug = True
@@ -134,7 +134,9 @@ def add_product():
 
     db.session.commit()
 
-    return product_schema.jsonify(product)
+    resp = flask.Response(product_schema.jsonify(product))
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 # @app.route('/notificar')
 
