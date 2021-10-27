@@ -95,7 +95,7 @@ products_schema = ProductSchema(many=True)
 def add_product():
     sku = request.json['sku']
     price = requests.get(
-        "https://api.mercadolibre.com/items/"+sku).json()['price']
+        "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
     email = request.json['email']
     drop_price = request.json['drop_price']
     drop_discount = request.json['drop_discount']
@@ -145,7 +145,7 @@ def report_elements():
     products = Product.query.all()
     for prod in products:
         resp = requests.get(
-            "https://api.mercadolibre.com/items/"+prod.sku).json()
+            "https://api.mercadolibre.com/items/MLU"+prod.sku).json()
         # print(resp['id'])
         prods_pers = Person_product.query.filter_by(sku=resp['id'])
         for pp in prods_pers:
