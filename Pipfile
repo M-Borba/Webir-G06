@@ -17,6 +17,7 @@ pip = "*"
 alembic = "*"
 requests = "*"
 apscheduler = "*"
+response = "*"
 
 [requires]
 python_version = "3.8"

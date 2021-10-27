@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from sqlalchemy import Table, Column, Integer, ForeignKey
@@ -133,8 +133,9 @@ def add_product():
         person_product.drop_discount = drop_discount
 
     db.session.commit()
-
-    resp = flask.Response(product_schema.jsonify(product))
+    #
+    resp = product_schema.jsonify(product)
+    resp.status_code = 302
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
