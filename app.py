@@ -10,6 +10,7 @@ import requests
 import time
 import smtplib
 from email.mime.text import MIMEText
+from flask_cors import CORS, cross_origin
 
 Base = declarative_base()
 
@@ -92,6 +93,7 @@ products_schema = ProductSchema(many=True)
 
 
 @app.route('/product', methods=['POST'])
+@cross_origin(origin='*')
 def add_product():
     req = request.get_json()
     sku = req['sku']
