@@ -68,12 +68,12 @@ class Person_product(db.Model, Base):
     sku = Column(ForeignKey('product.sku', ondelete="CASCADE", onupdate="CASCADE"),
                  primary_key=True)
     drop_price = db.Column(db.Float)
-    drop_discount = db.Column(db.Float)
+    #drop_discount = db.Column(db.Float)
 
-    def __init__(self, sku, email, drop_price, drop_discount):
+    def __init__(self, sku, email, drop_price):
         self.sku = sku
         self.email = email
-        self.drop_discount = drop_discount
+        #self.drop_discount = drop_discount
         self.drop_price = drop_price
 
 # Product Schema -- para la serializacion, esto se retorna
@@ -98,7 +98,7 @@ def add_product():
         "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
     email = request.json['email']
     drop_price = request.json['drop_price']
-    drop_discount = request.json['drop_discount']
+    #drop_discount = request.json['drop_discount']
 
     if not isinstance(sku, str):
         return "sku debe estar compuesto por caracteres"
@@ -110,8 +110,8 @@ def add_product():
         return "email debe estar compuesto por caracteres"
     if not isinstance(drop_price, int):
         return "drop_price debe ser un numero"
-    if not isinstance(drop_discount, int):
-        return "drop_discount debe ser un numero"
+    # if not isinstance(drop_discount, int):
+    #    return "drop_discount debe ser un numero"
 
     product = Product.query.get(sku)
     if product is None:
@@ -126,11 +126,11 @@ def add_product():
     person_product = Person_product.query.filter_by(
         email=email, sku=sku).first()
     if person_product is None:
-        person_product = Person_product(sku, email, drop_price, drop_discount)
+        person_product = Person_product(sku, email, drop_price)
         db.session.add(person_product)
     else:
         person_product.drop_price = drop_price
-        person_product.drop_discount = drop_discount
+        #person_product.drop_discount = drop_discount
 
     db.session.commit()
     #
