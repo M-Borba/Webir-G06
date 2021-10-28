@@ -93,11 +93,12 @@ products_schema = ProductSchema(many=True)
 
 @app.route('/product', methods=['POST'])
 def add_product():
-    sku = request.json['sku']
+    req = request.get_json()
+    sku = req['sku']
     price = requests.get(
         "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
-    email = request.json['email']
-    drop_price = request.json['drop_price']
+    email = req['email']
+    drop_price = req['drop_price']
     #drop_discount = request.json['drop_discount']
 
     if not isinstance(sku, str):
