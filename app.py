@@ -96,8 +96,8 @@ products_schema = ProductSchema(many=True)
 @cross_origin(origin='*')
 def add_product():
     req = request.get_json()
-    sku = req['sku']
     print(req)
+    sku = req['sku']
     price = requests.get(
         "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
     email = req['email']
