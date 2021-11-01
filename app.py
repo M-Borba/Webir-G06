@@ -17,7 +17,7 @@ Base = declarative_base()
 
 # Init app
 app = Flask(__name__)
-
+CORS(app)
 
 ENV = 'prod'
 
