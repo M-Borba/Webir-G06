@@ -97,6 +97,7 @@ products_schema = ProductSchema(many=True)
 def add_product():
     req = request.get_json()
     sku = req['sku']
+    print(req)
     price = requests.get(
         "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
     email = req['email']
