@@ -148,7 +148,9 @@ def add_product():
 
 def report_elements():
     products = Product.query.all()
+    print("aca")
     for prod in products:
+        print("aca prod")
         resp = requests.get(
             "https://api.mercadolibre.com/items/MLU"+prod.sku).json()
         # print(resp['id'])
