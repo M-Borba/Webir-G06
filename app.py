@@ -157,6 +157,7 @@ def report_elements():
             if pp.drop_price > resp['price']:
                 # return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
                 subject = "Camel-UY => " + resp['title']
+                print("llegue aca")
                 if(enviarCorreo(pp.email, resp['permalink'], subject)):
                     print("Correo enviado a "+pp.email+" con subject "+subject)
                     sku_aux = prod.sku
