@@ -5,7 +5,7 @@ scheduler = BackgroundScheduler()
 
 # @sched.scheduled_job('interval', minutes=1)
 # def timed_job():
-scheduler.add_job(func=report_elements(), trigger="interval", seconds=120)
+scheduler.add_job(func=report_elements, trigger="interval", seconds=120)
 
 
 scheduler.start()
