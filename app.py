@@ -96,7 +96,7 @@ products_schema = ProductSchema(many=True)
 @cross_origin(origin='*')
 def add_product():
     req = request.get_json()
-    print(req)
+    # print(req)
     sku = req['sku']
     price = requests.get(
         "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
@@ -148,18 +148,17 @@ def add_product():
 
 def report_elements():
     products = Product.query.all()
-    print("aca")
     for prod in products:
-        print("aca prod")
+        # print(prod.sku)
         resp = requests.get(
             "https://api.mercadolibre.com/items/MLU"+prod.sku).json()
         # print(resp['id'])
-        prods_pers = Person_product.query.filter_by(sku=resp['id'])
+        prods_pers = Person_product.query.filter_by(sku=resp['id'][3:])
+        # print(prods_pers)
         for pp in prods_pers:
+            # print(pp.drop_price)
             if pp.drop_price > resp['price']:
-                # return {'Dato':'Valor menor','reposnse':resp['price'],'db':pp.drop_price}
                 subject = "Camel-UY => " + resp['title']
-                print("llegue aca")
                 if(enviarCorreo(pp.email, resp['permalink'], subject)):
                     print("Correo enviado a "+pp.email+" con subject "+subject)
                     sku_aux = prod.sku
@@ -245,9 +244,9 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
 if __name__ == '__main__':
     app.run()
 
-
+""" 
 def getApp():
-    return app
+    return app """
 
 
 # ------------------Mails
