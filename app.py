@@ -197,8 +197,8 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
         servidor_smtp.quit()
         return True
     except:
+        print("No se pudo enviar el Correo a "+dirDestino)
         return False
-
 
 # # Get All Products
 # @app.route('/product', methods=['GET'])
@@ -236,6 +236,7 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
 #   db.session.commit()
 
 #   return product_schema.jsonify(product)
+
 
 # Run Server
 if __name__ == '__main__':
