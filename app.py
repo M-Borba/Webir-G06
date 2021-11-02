@@ -12,6 +12,9 @@ import smtplib
 from email.mime.text import MIMEText
 from flask_cors import CORS, cross_origin
 
+from datetime import datetime
+
+
 Base = declarative_base()
 
 
@@ -19,7 +22,7 @@ Base = declarative_base()
 app = Flask(__name__)
 CORS(app)
 
-ENV = 'prod'
+ENV = 'dev'
 
 if ENV == 'dev':
     app.debug = True
@@ -139,7 +142,7 @@ def add_product():
     db.session.commit()
     #
     resp = product_schema.jsonify(product)
-    resp.status_code = 302
+    resp.status_code = 201
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
@@ -154,12 +157,24 @@ def report_elements():
             "https://api.mercadolibre.com/items/MLU"+prod.sku).json()
         # print(resp['id'])
         prods_pers = Person_product.query.filter_by(sku=resp['id'][3:])
+        prod.price = resp['price']
         # print(prods_pers)
+
         for pp in prods_pers:
             # print(pp.drop_price)
             if pp.drop_price > resp['price']:
+                mensaje = ""
+                if datetime.utcnow() < resp['stop_time']:
+                    msg = MIMEText('''Bajo el precio!!!
+                            Que estas esperando? Anda a buscarlo!!
+                            {}
+                            '''.format(mensaje))
+                else:
+                    msg = MIMEText('''Producto dado de baja
+                            Lo lamentamos
+                            ''')
                 subject = "Camel-UY => " + resp['title']
-                if(enviarCorreo(pp.email, resp['permalink'], subject)):
+                if(enviarCorreo(pp.email, msg, subject)):
                     print("Correo enviado a "+pp.email+" con subject "+subject)
                     sku_aux = prod.sku
                     email_aux = pp.email
@@ -173,17 +188,13 @@ def report_elements():
                     if join_email:
                         person = Person.query.get(email_aux)
                         db.session.delete(person)
-                    db.session.commit()
+        db.session.commit()
 
 
 def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensaje)
     dirOrigen = 'webir2021@gmail.com'
     contraseña = 'camelcamelcamel'
 
-    msg = MIMEText('''Bajo el precio!!!
-    Que estas esperando? Anda a buscarlo!!
-    {}
-    '''.format(mensaje))
     # print(pp.email)
     # print(mensaje)
     msg['Subject'] = subject
