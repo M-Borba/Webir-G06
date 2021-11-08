@@ -149,7 +149,7 @@ def report_elements():
 
         for pp in prods_pers:
             if pp.drop_price > resp['price']:
-                mensaje = ""
+                msg = ""
                 if datetime.utcnow().strftime("%Y-%m-%d") < resp['stop_time'][:10]:
                     msg = MIMEText('''Bajo el precio!!!
                             Que estas esperando? Anda a buscarlo!!
