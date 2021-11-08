@@ -162,7 +162,7 @@ def report_elements():
         for pp in prods_pers:
             invalid_date = datetime.utcnow().strftime(
                 "%Y-%m-%d") >= resp['stop_time'][:10]
-            if correct_price(pp.drop_price, resp['price'], pp.currency, resp["currency_id"]) or invalid_date:
+            if correct_price(pp.drop_price, resp['price'], pp.currency_id, resp["currency_id"]) or invalid_date:
                 mensaje = []
                 if not invalid_date:
                     mensaje = [resp['permalink']]
