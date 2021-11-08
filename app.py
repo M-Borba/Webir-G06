@@ -148,9 +148,11 @@ def report_elements():
         prod.price = resp['price']
 
         for pp in prods_pers:
-            if pp.drop_price > resp['price']:
+            invalid_date = datetime.utcnow().strftime(
+                "%Y-%m-%d") >= resp['stop_time'][:10]
+            if pp.drop_price > resp['price'] or invalid_date:
                 mensaje = []
-                if datetime.utcnow().strftime("%Y-%m-%d") < resp['stop_time'][:10]:
+                if not invalid_date:
                     mensaje = [resp['permalink']]
                 else:
                     mensaje = ["baja", resp['permalink']]
