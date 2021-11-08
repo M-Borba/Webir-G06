@@ -149,18 +149,14 @@ def report_elements():
 
         for pp in prods_pers:
             if pp.drop_price > resp['price']:
-                msg = ""
+                mensaje = []
                 if datetime.utcnow().strftime("%Y-%m-%d") < resp['stop_time'][:10]:
-                    msg = MIMEText('''Bajo el precio!!!
-                            Que estas esperando? Anda a buscarlo!!
-                            {}
-                            '''.format(msg))
+                    mensaje = [resp['permalink']]
                 else:
-                    msg = MIMEText('''Producto dado de baja
-                            Lo lamentamos
-                            ''')
+                    mensaje = ["baja", resp['permalink']]
                 subject = "Camel-UY => " + resp['title']
-                if(enviarCorreo(pp.email, msg, subject)):
+
+                if(enviarCorreo(pp.email, mensaje, subject)):
                     print("Correo enviado a "+pp.email+" con subject "+subject)
                     sku_aux = prod.sku
                     email_aux = pp.email
@@ -180,6 +176,16 @@ def report_elements():
 def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensaje)
     dirOrigen = 'webir2021@gmail.com'
     contraseña = 'camelcamelcamel'
+    if mensaje[0] != "baja":
+        msg = MIMEText('''Bajo el precio!!!
+        Que estas esperando? Anda a buscarlo!!
+        {}
+        '''.format(mensaje[0]))
+    else:
+        msg = MIMEText('''Los sentimos
+        Tu producto fue dado de baja
+        {}
+        '''.format(mensaje[1]))
 
     msg['Subject'] = subject
     msg['From'] = 'webir2021@gmail.com'
