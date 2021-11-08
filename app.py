@@ -68,7 +68,7 @@ class Person_product(db.Model, Base):
     drop_price = db.Column(db.Float)
     currency_id = db.Column(db.String(20))
 
-    def __init__(self, sku, email, drop_price):
+    def __init__(self, sku, email, drop_price, currency_id):
         self.sku = sku
         self.email = email
         self.currency_id = currency_id
