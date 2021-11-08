@@ -145,9 +145,9 @@ def correct_price(drop, price_req, currency, currency_req):
         de_peso_a_dolar = curr["inv_rate"]
         de_dolar_a_peso = curr["rate"]
         if currency_req == "USD":
-            return drop.de_peso_a_dolar > price_req
+            return drop*de_peso_a_dolar > price_req
         else:
-            return drop.de_dolar_a_peso > price_req
+            return drop*de_dolar_a_peso > price_req
 
 
 def report_elements():
