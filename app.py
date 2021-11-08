@@ -154,7 +154,7 @@ def report_elements():
                     msg = MIMEText('''Bajo el precio!!!
                             Que estas esperando? Anda a buscarlo!!
                             {}
-                            '''.format(mensaje))
+                            '''.format(msg))
                 else:
                     msg = MIMEText('''Producto dado de baja
                             Lo lamentamos
