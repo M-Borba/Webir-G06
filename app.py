@@ -22,7 +22,7 @@ Base = declarative_base()
 app = Flask(__name__)
 CORS(app)
 
-ENV = 'dev'
+ENV = 'prod'
 
 if ENV == 'dev':
     app.debug = True
@@ -33,14 +33,8 @@ else:
 
 app.config['SQLALCHEMY_DATABASE_MODIFICATIONS'] = False
 
-# basedir = os.path.abspath(os.path.dirname(__file__))
-# # Database
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
-#     os.path.join(basedir, 'db.sqlite')
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Init db
 db = SQLAlchemy(app)
-# Init ma
+
 ma = Marshmallow(app)
 
 # # Person Class/Model
@@ -109,16 +103,10 @@ def add_product():
 
     if not isinstance(sku, str):
         return "sku debe estar compuesto por caracteres"
-    # try:
-    #     json.loads(json.dumps(json_data))
-    # except ValueError as err:
-    #     return "json_data debe ser formato JSON"
     if not isinstance(email, str):
         return "email debe estar compuesto por caracteres"
     if not isinstance(drop_price, int):
         return "drop_price debe ser un numero"
-    # if not isinstance(drop_discount, int):
-    #    return "drop_discount debe ser un numero"
 
     product = Product.query.get(sku)
     if product is None:
@@ -137,31 +125,23 @@ def add_product():
         db.session.add(person_product)
     else:
         person_product.drop_price = drop_price
-        #person_product.drop_discount = drop_discount
 
     db.session.commit()
-    #
     resp = product_schema.jsonify(product)
     resp.status_code = 201
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
-# @app.route('/notificar')
-
 
 def report_elements():
     products = Product.query.all()
     for prod in products:
-        # print(prod.sku)
         resp = requests.get(
             "https://api.mercadolibre.com/items/MLU"+prod.sku).json()
-        # print(resp['id'])
         prods_pers = Person_product.query.filter_by(sku=resp['id'][3:])
         prod.price = resp['price']
-        # print(prods_pers)
 
         for pp in prods_pers:
-            # print(pp.drop_price)
             if pp.drop_price > resp['price']:
                 mensaje = ""
                 if datetime.utcnow() < resp['stop_time']:
@@ -195,8 +175,6 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
     dirOrigen = 'webir2021@gmail.com'
     contraseña = 'camelcamelcamel'
 
-    # print(pp.email)
-    # print(mensaje)
     msg['Subject'] = subject
     msg['From'] = 'webir2021@gmail.com'
     msg['To'] = dirDestino
@@ -213,43 +191,6 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
         print("No se pudo enviar el Correo a "+dirDestino)
         return False
 
-# # Get All Products
-# @app.route('/product', methods=['GET'])
-# def get_products():
-#   all_products = Product.query.all()
-#   result = products_schema.dump(all_products)
-#   return jsonify(result)
-
-# # Get Single Products
-# @app.route('/product/<sku>', methods=['GET'])
-# def get_product(sku):
-#   product = Product.query.get(sku)
-#   return product_schema.jsonify(product)
-
-# # Update a Product
-# @app.route('/product/<sku>', methods=['PUT'])
-# def update_product(sku):
-#   product = Product.query.get(sku)
-
-#   sku = request.json['sku']
-#   json_data = request.json['json_data']
-
-#   product.sku = sku
-#   product.json_data = json_data
-
-#   db.session.commit()
-
-#   return product_schema.jsonify(product)
-
-# # Delete Product
-# @app.route('/product/<sku>', methods=['DELETE'])
-# def delete_product(sku):
-#   product = Product.query.get(sku)
-#   db.session.delete(product)
-#   db.session.commit()
-
-#   return product_schema.jsonify(product)
-
 
 # Run Server
 if __name__ == '__main__':
@@ -258,17 +199,3 @@ if __name__ == '__main__':
 """ 
 def getApp():
     return app """
-
-
-# ------------------Mails
-
-# def prueba():
-#   i = 1
-#   while True:
-#     time.sleep(10)
-#     enviarCorreo()
-
-# hilo = threading.Thread(target=prueba)
-# hilo.daemon = True
-# hilo.start()
-# import smtplib
