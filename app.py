@@ -130,10 +130,12 @@ def add_product():
     resp = product_schema.jsonify(product)
     resp.status_code = 201
     resp.headers['Access-Control-Allow-Origin'] = '*'
+    print("registro con exito")
     return resp
 
 
 def report_elements():
+    print("Reportando Elementos \n")
     products = Product.query.all()
     for prod in products:
         resp = requests.get(
