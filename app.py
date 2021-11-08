@@ -66,12 +66,12 @@ class Person_product(db.Model, Base):
     sku = Column(ForeignKey('product.sku', ondelete="CASCADE", onupdate="CASCADE"),
                  primary_key=True)
     drop_price = db.Column(db.Float)
-    #drop_discount = db.Column(db.Float)
+    currency_id = db.Column(db.String(20))
 
     def __init__(self, sku, email, drop_price):
         self.sku = sku
         self.email = email
-        #self.drop_discount = drop_discount
+        self.currency_id = currency_id
         self.drop_price = drop_price
 
 # Product Schema -- para la serializacion, esto se retorna
@@ -95,6 +95,7 @@ def add_product():
     req = request.get_json()
     # print(req)
     sku = req['sku']
+    currency_id = req['currency_id']
     price = requests.get(
         "https://api.mercadolibre.com/items/MLU"+sku).json()['price']
     email = req['email']
@@ -121,9 +122,10 @@ def add_product():
     person_product = Person_product.query.filter_by(
         email=email, sku=sku).first()
     if person_product is None:
-        person_product = Person_product(sku, email, drop_price)
+        person_product = Person_product(sku, email, drop_price, currency_id)
         db.session.add(person_product)
     else:
+        person_product.currency_id = currency_id
         person_product.drop_price = drop_price
 
     db.session.commit()
@@ -134,8 +136,18 @@ def add_product():
     return resp
 
 
-def to_integer(dt_time):
-    return 10000*dt_time.year + 100*dt_time.month + dt_time.day
+def correct_price(drop, price_req, currency, currency_req):
+    if currency == currency_req:
+        return drop > price_req
+    else:
+        curr = requests.get(
+            "https://api.mercadolibre.com/currency_conversions/search?from=USD&to=UYU").json()
+        de_peso_a_dolar = curr["inv_rate"]
+        de_dolar_a_peso = curr["rate"]
+        if currency_req == "USD":
+            return drop.de_peso_a_dolar > price_req
+        else:
+            return drop.de_dolar_a_peso > price_req
 
 
 def report_elements():
@@ -150,7 +162,7 @@ def report_elements():
         for pp in prods_pers:
             invalid_date = datetime.utcnow().strftime(
                 "%Y-%m-%d") >= resp['stop_time'][:10]
-            if pp.drop_price > resp['price'] or invalid_date:
+            if correct_price(pp.drop_price, resp['price'], pp.currency, resp["currency_id"]) or invalid_date:
                 mensaje = []
                 if not invalid_date:
                     mensaje = [resp['permalink']]
