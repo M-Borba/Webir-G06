@@ -134,6 +134,10 @@ def add_product():
     return resp
 
 
+def to_integer(dt_time):
+    return 10000*dt_time.year + 100*dt_time.month + dt_time.day
+
+
 def report_elements():
     print("Reportando Elementos \n")
     products = Product.query.all()
@@ -146,7 +150,7 @@ def report_elements():
         for pp in prods_pers:
             if pp.drop_price > resp['price']:
                 mensaje = ""
-                if datetime.utcnow() < resp['stop_time']:
+                if datetime.utcnow().strftime("%Y-%m-%d") < resp['stop_time'][:10]:
                     msg = MIMEText('''Bajo el precio!!!
                             Que estas esperando? Anda a buscarlo!!
                             {}
