@@ -11,7 +11,6 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 from flask_cors import CORS, cross_origin
-
 from datetime import datetime
 
 
@@ -90,7 +89,7 @@ products_schema = ProductSchema(many=True)
 
 
 @app.route('/product', methods=['POST'])
-@cross_origin(origin='*')
+# @cross_origin(origin='*')
 def add_product():
     req = request.get_json()
     # print(req)
@@ -221,7 +220,3 @@ def enviarCorreo(dirDestino, mensaje, subject):  # enviarCorreo(dirDestino,mensa
 # Run Server
 if __name__ == '__main__':
     app.run()
-
-""" 
-def getApp():
-    return app """
